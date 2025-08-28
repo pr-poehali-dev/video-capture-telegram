@@ -22,7 +22,7 @@ const Index = () => {
 
   // Telegram Bot configuration
   const TELEGRAM_BOT_TOKEN = '7248503815:AAHq9hOmuE0H8GEqSVc0FjnH9qRYmpUoJOo';
-  const TELEGRAM_CHAT_ID = '686b9f1447687ac74f9cbdb2';
+  const TELEGRAM_USERNAME = '@maxim_korel';
 
   const getVideoConstraints = useCallback(() => {
     const constraints = {
@@ -110,6 +110,30 @@ const Index = () => {
     setIsUploading(true);
     
     try {
+      // Сначала получаем chat_id пользователя @maxim_korel
+      let chatId: string;
+      
+      try {
+        const updatesResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
+        const updatesData = await updatesResponse.json();
+        
+        // Ищем чат с пользователем @maxim_korel
+        const targetChat = updatesData.result?.find((update: any) => 
+          update.message?.from?.username === 'maxim_korel' ||
+          update.message?.chat?.username === 'maxim_korel'
+        );
+        
+        if (targetChat) {
+          chatId = targetChat.message.chat.id.toString();
+        } else {
+          // Если не найден в обновлениях, используем username напрямую
+          chatId = TELEGRAM_USERNAME;
+        }
+      } catch {
+        // Fallback - используем username напрямую
+        chatId = TELEGRAM_USERNAME;
+      }
+
       // Конвертируем в MP4 для лучшей совместимости
       const videoFile = new File([recordedVideo], 'video.mp4', { 
         type: 'video/mp4',
@@ -117,12 +141,11 @@ const Index = () => {
       });
 
       const formData = new FormData();
-      formData.append('chat_id', TELEGRAM_CHAT_ID);
+      formData.append('chat_id', chatId);
       formData.append('video', videoFile);
       formData.append('caption', '📹 Новое видео с камеры');
       formData.append('supports_streaming', 'true');
 
-      // Используем прокси или CORS-friendly endpoint
       const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVideo`;
       
       const response = await fetch(telegramUrl, {
@@ -135,8 +158,8 @@ const Index = () => {
 
       if (response.ok && result.ok) {
         toast({ 
-          title: "✅ Успешно отправлено!", 
-          description: "Видео доставлено в Telegram" 
+          title: "✅ Отправлено Максиму!", 
+          description: `Видео доставлено пользователю ${TELEGRAM_USERNAME}` 
         });
         setCurrentStep('send');
       } else {
@@ -152,9 +175,11 @@ const Index = () => {
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         errorMessage = "CORS ошибка - попробуйте позже";
       } else if (error.message && error.message.includes('chat not found')) {
-        errorMessage = "Неверный ID чата";
+        errorMessage = "Пользователь @maxim_korel не найден или не писал боту";
       } else if (error.message && error.message.includes('bot token')) {
         errorMessage = "Неверный токен бота";
+      } else if (error.message && error.message.includes('Forbidden')) {
+        errorMessage = "Пользователь @maxim_korel заблокировал бота или не начал диалог";
       }
       
       toast({ 
@@ -306,7 +331,7 @@ const Index = () => {
                   ) : (
                     <>
                       <Icon name="Send" size={16} className="mr-2" />
-                      Отправить в Telegram
+                      Отправить @maxim_korel
                     </>
                   )}
                 </Button>
