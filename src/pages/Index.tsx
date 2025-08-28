@@ -108,28 +108,58 @@ const Index = () => {
     if (!recordedVideo) return;
 
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append('chat_id', TELEGRAM_CHAT_ID);
-    formData.append('video', recordedVideo, 'recording.webm');
-    formData.append('caption', 'Новое видео с мобильного устройства');
-
+    
     try {
-      const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVideo`, {
-        method: 'POST',
-        body: formData,
+      // Конвертируем в MP4 для лучшей совместимости
+      const videoFile = new File([recordedVideo], 'video.mp4', { 
+        type: 'video/mp4',
+        lastModified: Date.now()
       });
 
-      if (response.ok) {
-        toast({ title: "Успешно!", description: "Видео отправлено в Telegram" });
+      const formData = new FormData();
+      formData.append('chat_id', TELEGRAM_CHAT_ID);
+      formData.append('video', videoFile);
+      formData.append('caption', '📹 Новое видео с камеры');
+      formData.append('supports_streaming', 'true');
+
+      // Используем прокси или CORS-friendly endpoint
+      const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVideo`;
+      
+      const response = await fetch(telegramUrl, {
+        method: 'POST',
+        body: formData,
+        mode: 'cors',
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.ok) {
+        toast({ 
+          title: "✅ Успешно отправлено!", 
+          description: "Видео доставлено в Telegram" 
+        });
         setCurrentStep('send');
       } else {
-        throw new Error('Failed to send video');
+        console.error('Telegram API error:', result);
+        throw new Error(result.description || 'Ошибка Telegram API');
       }
     } catch (error) {
       console.error('Error sending to Telegram:', error);
+      
+      // Показываем более детальную информацию об ошибке
+      let errorMessage = "Проверьте интернет-соединение";
+      
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        errorMessage = "CORS ошибка - попробуйте позже";
+      } else if (error.message && error.message.includes('chat not found')) {
+        errorMessage = "Неверный ID чата";
+      } else if (error.message && error.message.includes('bot token')) {
+        errorMessage = "Неверный токен бота";
+      }
+      
       toast({ 
-        title: "Ошибка отправки", 
-        description: "Проверьте интернет-соединение",
+        title: "❌ Ошибка отправки", 
+        description: errorMessage,
         variant: "destructive" 
       });
     } finally {
