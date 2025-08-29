@@ -250,9 +250,11 @@ const Record = () => {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-gray-900">IMPERIA PROMO</h1>
-            <Badge variant={isRecording ? "destructive" : "secondary"}>
-              {isRecording ? "Запись..." : "Готов"}
-            </Badge>
+            {isRecording && (
+              <Badge variant="destructive">
+                Запись...
+              </Badge>
+            )}
           </div>
         </div>
       </div>
