@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
 import Icon from '@/components/ui/icon';
 
@@ -151,10 +152,26 @@ const Record = () => {
         lastModified: Date.now()
       });
 
+      // Получаем сохраненную геолокацию
+      const locationData = localStorage.getItem('userLocation');
+      let locationText = '';
+      
+      if (locationData) {
+        try {
+          const location = JSON.parse(locationData);
+          locationText = `\n📍 Координаты: ${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
+          if (location.accuracy) {
+            locationText += `\n🎯 Точность: ${Math.round(location.accuracy)}м`;
+          }
+        } catch (e) {
+          console.error('Ошибка парсинга геолокации:', e);
+        }
+      }
+
       const formData = new FormData();
       formData.append('chat_id', TELEGRAM_CHAT_ID);
       formData.append('video', videoFile);
-      formData.append('caption', '📹 Новое видео с камеры');
+      formData.append('caption', `📹 Новое видео с камеры${locationText}`);
       formData.append('supports_streaming', 'true');
 
       const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVideo`;
@@ -170,7 +187,7 @@ const Record = () => {
       if (response.ok && result.ok) {
         toast({ 
           title: "✅ Отправлено Максиму!", 
-          description: "Видео успешно доставлено в Telegram" 
+          description: "Видео и геолокация доставлены в Telegram" 
         });
         setCurrentStep('send');
       } else {
@@ -213,7 +230,7 @@ const Record = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-50">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b">
-        <div className="max-w-md mx-auto px-4 py-4">
+        <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-gray-900">Видео Рекордер</h1>
             <Badge variant={isRecording ? "destructive" : "secondary"}>
@@ -223,7 +240,44 @@ const Record = () => {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-4 py-6">
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+          
+          {/* Left Column - QR Code */}
+          <div className="flex flex-col">
+            <Card className="p-6 h-full flex flex-col items-center justify-center">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">QR Код для сканирования</h3>
+              
+              <Dialog>
+                <DialogTrigger asChild>
+                  <div className="cursor-pointer transition-transform hover:scale-105 active:scale-95">
+                    <img 
+                      src="https://cdn.poehali.dev/files/e8e80020-0ec6-4dbd-b93c-b8f9b913a2b4.jpeg"
+                      alt="QR Code"
+                      className="w-80 h-80 object-contain rounded-lg shadow-lg border-2 border-gray-200"
+                    />
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl w-full">
+                  <div className="flex items-center justify-center p-4">
+                    <img 
+                      src="https://cdn.poehali.dev/files/e8e80020-0ec6-4dbd-b93c-b8f9b913a2b4.jpeg"
+                      alt="QR Code - Увеличенный"
+                      className="w-full max-w-lg h-auto object-contain rounded-lg"
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
+              
+              <p className="text-sm text-gray-600 text-center mt-4 max-w-sm">
+                Нажмите на QR код для увеличения. Отсканируйте его для получения дополнительной информации.
+              </p>
+            </Card>
+          </div>
+
+          {/* Right Column - Video Recording */}
+          <div className="flex flex-col">
         {/* Step Indicator */}
         <div className="flex items-center justify-center mb-6">
           {['record', 'preview', 'send'].map((step, index) => (
@@ -381,6 +435,8 @@ const Record = () => {
             </div>
           </div>
         </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
