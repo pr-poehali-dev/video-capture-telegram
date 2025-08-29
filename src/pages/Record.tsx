@@ -175,13 +175,19 @@ const Record = () => {
       // Добавляем данные промоутера
       let promoterText = '';
       if (promoterName.trim()) {
-        promoterText = `\n👤 Промоутер: ${promoterName.trim()}`;
+        promoterText = `👤 Промоутер: ${promoterName.trim()}`;
       }
+
+      // Создаем caption без лишнего текста "Видео"
+      const captionParts = [promoterText, locationText].filter(part => part.trim());
+      const caption = captionParts.join('\n');
 
       const formData = new FormData();
       formData.append('chat_id', TELEGRAM_CHAT_ID);
       formData.append('video', videoFile);
-      formData.append('caption', `📹 Видео${promoterText}${locationText}`);
+      if (caption) {
+        formData.append('caption', caption);
+      }
       formData.append('supports_streaming', 'true');
 
       const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVideo`;
@@ -262,11 +268,11 @@ const Record = () => {
               
               <Dialog>
                 <DialogTrigger asChild>
-                  <div className="cursor-pointer transition-transform hover:scale-105 active:scale-95">
+                  <div className="cursor-pointer transition-transform hover:scale-105 active:scale-95 glowing-border">
                     <img 
                       src="https://cdn.poehali.dev/files/e8e80020-0ec6-4dbd-b93c-b8f9b913a2b4.jpeg"
                       alt="QR Code"
-                      className="w-80 h-80 object-contain rounded-lg shadow-lg border-2 border-gray-200"
+                      className="w-80 h-80 object-contain rounded-lg shadow-lg relative z-10"
                     />
                   </div>
                 </DialogTrigger>
@@ -482,6 +488,8 @@ const Record = () => {
           </div>
         </Card>
           </div>
+
+
         </div>
       </div>
     </div>
