@@ -249,7 +249,7 @@ const Record = () => {
       <div className="bg-white/80 backdrop-blur-sm border-b">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-gray-900">Видео Рекордер</h1>
+            <h1 className="text-xl font-semibold text-gray-900">IMPERIA PROMO</h1>
             <Badge variant={isRecording ? "destructive" : "secondary"}>
               {isRecording ? "Запись..." : "Готов"}
             </Badge>
