@@ -11,7 +11,7 @@ const QRCodeSection = () => {
           <DialogTrigger asChild>
             <div className="cursor-pointer transition-transform hover:scale-105 active:scale-95 glowing-border">
               <img 
-                src="/img/328b78de-5328-4a32-b18b-f7e5978fb5aa.jpg"
+                src="https://cdn.poehali.dev/files/e8e80020-0ec6-4dbd-b93c-b8f9b913a2b4.jpeg"
                 alt="QR Code"
                 className="w-80 h-80 object-contain rounded-lg shadow-lg relative z-10"
               />
@@ -20,7 +20,7 @@ const QRCodeSection = () => {
           <DialogContent className="max-w-2xl w-full">
             <div className="flex items-center justify-center p-4">
               <img 
-                src="/img/328b78de-5328-4a32-b18b-f7e5978fb5aa.jpg"
+                src="https://cdn.poehali.dev/files/e8e80020-0ec6-4dbd-b93c-b8f9b913a2b4.jpeg"
                 alt="QR Code - Увеличенный"
                 className="w-full max-w-lg h-auto object-contain rounded-lg"
               />
