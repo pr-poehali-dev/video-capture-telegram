@@ -129,44 +129,4 @@
       opacity: 1;
     }
   }
-
-  .glowing-border {
-    position: relative;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .glowing-border::before {
-    content: "";
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(
-      45deg,
-      #3b82f6,
-      #8b5cf6,
-      #f59e0b,
-      #ef4444,
-      #10b981,
-      #3b82f6
-    );
-    background-size: 300% 300%;
-    border-radius: 14px;
-    z-index: -1;
-    animation: glowing 3s ease infinite;
-  }
-
-  @keyframes glowing {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
 }

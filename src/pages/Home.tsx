@@ -81,7 +81,10 @@ const Home = () => {
         timestamp: new Date().toISOString()
       }));
 
-
+      toast({
+        title: "✅ Местоположение получено",
+        description: `Точность: ${Math.round(position.coords.accuracy)}м. Переходим к записи видео`,
+      });
 
       // Небольшая задержка для показа сообщения
       setTimeout(() => navigate('/record'), 1000);
