@@ -43,8 +43,8 @@ const VideoRecorder = ({
     const constraints = {
       video: {
         facingMode: 'environment', // Rear camera
-        width: quality === '1080p' ? { ideal: 1920 } : quality === '720p' ? { ideal: 1280 } : { ideal: 640 },
-        height: quality === '1080p' ? { ideal: 1080 } : quality === '720p' ? { ideal: 720 } : { ideal: 480 },
+        width: quality === '360p' ? { ideal: 640 } : quality === '720p' ? { ideal: 1280 } : { ideal: 640 },
+        height: quality === '360p' ? { ideal: 360 } : quality === '720p' ? { ideal: 720 } : { ideal: 360 },
       },
       audio: true,
     };
@@ -102,7 +102,7 @@ const VideoRecorder = ({
       }
       
       // Add video bitrate for better quality
-      options.videoBitsPerSecond = quality === '1080p' ? 2500000 : quality === '720p' ? 1500000 : 800000;
+      options.videoBitsPerSecond = quality === '720p' ? 1500000 : 400000;
       options.audioBitsPerSecond = 128000;
 
       const mediaRecorder = new MediaRecorder(stream, options);
@@ -205,9 +205,8 @@ const VideoRecorder = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="480p">480p (экономный)</SelectItem>
-                    <SelectItem value="720p">720p (стандартный)</SelectItem>
-                    <SelectItem value="1080p">1080p (высокий)</SelectItem>
+                    <SelectItem value="360p">360p (экономный)</SelectItem>
+                    <SelectItem value="720p">720p (максимальный)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

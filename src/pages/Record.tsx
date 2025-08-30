@@ -13,7 +13,7 @@ const Record = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordedVideo, setRecordedVideo] = useState<Blob | null>(null);
   const [currentStep, setCurrentStep] = useState<'record' | 'preview' | 'send'>('record');
-  const [quality, setQuality] = useState('720p');
+  const [quality, setQuality] = useState('360p');
   const [isUploading, setIsUploading] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -29,8 +29,8 @@ const Record = () => {
     const constraints = {
       video: {
         facingMode: 'environment', // Rear camera
-        width: quality === '1080p' ? { ideal: 1920 } : quality === '720p' ? { ideal: 1280 } : { ideal: 640 },
-        height: quality === '1080p' ? { ideal: 1080 } : quality === '720p' ? { ideal: 720 } : { ideal: 480 },
+        width: quality === '360p' ? { ideal: 640 } : quality === '720p' ? { ideal: 1280 } : { ideal: 640 },
+        height: quality === '360p' ? { ideal: 360 } : quality === '720p' ? { ideal: 720 } : { ideal: 360 },
       },
       audio: true,
     };
@@ -88,7 +88,7 @@ const Record = () => {
       }
       
       // Add video bitrate for better quality
-      options.videoBitsPerSecond = quality === '1080p' ? 2500000 : quality === '720p' ? 1500000 : 800000;
+      options.videoBitsPerSecond = quality === '720p' ? 1500000 : 400000;
       options.audioBitsPerSecond = 128000;
 
       const mediaRecorder = new MediaRecorder(stream, options);
@@ -332,9 +332,8 @@ const Record = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="480p">480p (экономный)</SelectItem>
-                      <SelectItem value="720p">720p (стандартный)</SelectItem>
-                      <SelectItem value="1080p">1080p (высокий)</SelectItem>
+                      <SelectItem value="360p">360p (экономный)</SelectItem>
+                      <SelectItem value="720p">720p (максимальный)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
