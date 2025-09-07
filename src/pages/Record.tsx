@@ -1,14 +1,13 @@
 import { useState, useRef, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
-import Icon from '@/components/ui/icon';
+
+// Import decomposed components
+import VideoPreview from '@/components/record/VideoPreview';
+import RecordForm from '@/components/record/RecordForm';
+import VideoPlayback from '@/components/record/VideoPlayback';
+import QRCodeSection from '@/components/record/QRCodeSection';
 
 const Record = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -286,22 +285,7 @@ const Record = () => {
           
           {/* Left Column - QR Code */}
           <div className="flex flex-col">
-            <Card className="p-6 h-full flex flex-col items-center justify-center">
-              <div className="text-center space-y-4">
-                <div className="w-48 h-48 mx-auto bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-                  <div className="text-center">
-                    <Icon name="QrCode" size={48} className="mx-auto text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-500">QR код будет здесь</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-medium text-gray-900">Отсканируйте QR код</h3>
-                  <p className="text-sm text-gray-600">
-                    Наведите камеру телефона на QR код, чтобы открыть эту страницу на мобильном устройстве
-                  </p>
-                </div>
-              </div>
-            </Card>
+            <QRCodeSection />
           </div>
 
           {/* Right Column - Video Recording Interface */}
@@ -309,195 +293,45 @@ const Record = () => {
             <Card className="p-6 flex-1 flex flex-col">
               {currentStep === 'record' && (
                 <div className="flex flex-col h-full space-y-6">
-                  {/* Camera Preview */}
-                  <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      muted
-                      playsInline
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  {/* Recording Status */}
-                  <div className="text-center">
-                    {isRecording && (
-                      <div className="flex items-center justify-center gap-2 text-red-500">
-                        <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                        <span className="text-sm font-medium">Идет запись...</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Settings */}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-2 block">
-                        Качество видео
-                      </label>
-                      <Select value={quality} onValueChange={setQuality} disabled={isRecording}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="360p">360p (экономный)</SelectItem>
-                          <SelectItem value="480p">480p (максимальный)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    {/* Form Fields */}
-                    <div className="space-y-3">
-                      <h3 className="text-sm font-medium text-gray-700 mb-3">Анкета</h3>
-                      
-                      <div>
-                        <Input 
-                          placeholder="Имя родителя"
-                          value={parentName}
-                          onChange={(e) => setParentName(e.target.value)}
-                          disabled={isRecording}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Input 
-                          placeholder="Имя ребенка"
-                          value={childName}
-                          onChange={(e) => setChildName(e.target.value)}
-                          disabled={isRecording}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Input 
-                          placeholder="Возраст ребенка"
-                          value={childAge}
-                          onChange={(e) => setChildAge(e.target.value)}
-                          type="number"
-                          disabled={isRecording}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Input 
-                          placeholder="Телефон"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          type="tel"
-                          disabled={isRecording}
-                        />
-                      </div>
-                      
-                      <div>
-                        <Button
-                          onClick={getCurrentLocation}
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          disabled={isRecording}
-                        >
-                          <Icon name="MapPin" size={16} className="mr-2" />
-                          {location ? 'Геолокация получена' : 'Получить геолокацию'}
-                        </Button>
-                        {locationError && (
-                          <p className="text-xs text-red-500 mt-1">{locationError}</p>
-                        )}
-                        {location && (
-                          <p className="text-xs text-green-600 mt-1">
-                            📍 {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Record Controls */}
-                  <div className="flex gap-3">
-                    <Button
-                      onClick={isRecording ? stopRecording : startRecording}
-                      className={`flex-1 ${isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`}
-                      size="lg"
-                    >
-                      <Icon name={isRecording ? "Square" : "Circle"} size={20} className="mr-2" />
-                      {isRecording ? "Остановить" : "Начать запись"}
-                    </Button>
-                  </div>
+                  <VideoPreview 
+                    ref={videoRef}
+                    isRecording={isRecording}
+                  />
+                  
+                  <RecordForm
+                    quality={quality}
+                    setQuality={setQuality}
+                    parentName={parentName}
+                    setParentName={setParentName}
+                    childName={childName}
+                    setChildName={setChildName}
+                    childAge={childAge}
+                    setChildAge={setChildAge}
+                    phone={phone}
+                    setPhone={setPhone}
+                    location={location}
+                    locationError={locationError}
+                    getCurrentLocation={getCurrentLocation}
+                    isRecording={isRecording}
+                    startRecording={startRecording}
+                    stopRecording={stopRecording}
+                  />
                 </div>
               )}
 
               {currentStep === 'preview' && recordedVideo && (
-                <div className="space-y-6">
-                  {/* Video Preview */}
-                  <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
-                    <video
-                      src={URL.createObjectURL(recordedVideo)}
-                      controls
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  {/* Video Info */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Размер файла:</span>
-                      <span className="font-medium">{Math.round(recordedVideo.size / 1024)} KB</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Формат:</span>
-                      <span className="font-medium">{recordedVideo.type || 'video/mp4'}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Качество:</span>
-                      <span className="font-medium">{quality}</span>
-                    </div>
-                  </div>
-
-                  {/* Form Data Preview */}
-                  {(parentName || childName || childAge || phone || location) && (
-                    <div className="bg-blue-50 rounded-lg p-4 space-y-2">
-                      <h4 className="text-sm font-medium text-blue-900">Данные анкеты:</h4>
-                      {parentName && <p className="text-sm text-blue-800">👤 Родитель: {parentName}</p>}
-                      {childName && <p className="text-sm text-blue-800">👶 Ребенок: {childName}</p>}
-                      {childAge && <p className="text-sm text-blue-800">🎂 Возраст: {childAge} лет</p>}
-                      {phone && <p className="text-sm text-blue-800">📞 Телефон: {phone}</p>}
-                      {location && (
-                        <p className="text-sm text-blue-800">
-                          📍 Координаты: {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-3">
-                    <Button
-                      onClick={resetRecording}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      <Icon name="RotateCcw" size={16} className="mr-2" />
-                      Перезаписать
-                    </Button>
-                    <Button
-                      onClick={uploadToTelegram}
-                      className="flex-1 bg-green-500 hover:bg-green-600"
-                      disabled={isUploading}
-                    >
-                      {isUploading ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                          Отправка...
-                        </>
-                      ) : (
-                        <>
-                          <Icon name="Send" size={16} className="mr-2" />
-                          Отправить
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
+                <VideoPlayback
+                  recordedVideo={recordedVideo}
+                  quality={quality}
+                  parentName={parentName}
+                  childName={childName}
+                  childAge={childAge}
+                  phone={phone}
+                  location={location}
+                  isUploading={isUploading}
+                  resetRecording={resetRecording}
+                  uploadToTelegram={uploadToTelegram}
+                />
               )}
             </Card>
           </div>
