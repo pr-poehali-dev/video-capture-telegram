@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';\nimport { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
@@ -16,6 +16,14 @@ const Record = () => {
   const [quality, setQuality] = useState('360p');
   const [isUploading, setIsUploading] = useState(false);
 
+  // Form data
+  const [parentName, setParentName] = useState('');
+  const [childName, setChildName] = useState('');
+  const [childAge, setChildAge] = useState('');
+  const [phone, setPhone] = useState('');
+  const [location, setLocation] = useState<{lat: number, lon: number} | null>(null);
+  const [locationError, setLocationError] = useState('');
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -29,13 +37,36 @@ const Record = () => {
     const constraints = {
       video: {
         facingMode: 'environment', // Rear camera
-        width: quality === '360p' ? { ideal: 640 } : quality === '720p' ? { ideal: 1280 } : { ideal: 640 },
-        height: quality === '360p' ? { ideal: 360 } : quality === '720p' ? { ideal: 720 } : { ideal: 360 },
+        width: quality === '360p' ? { ideal: 640 } : quality === '480p' ? { ideal: 854 } : { ideal: 640 },
+        height: quality === '360p' ? { ideal: 360 } : quality === '480p' ? { ideal: 480 } : { ideal: 360 },
       },
       audio: true,
     };
     return constraints;
   }, [quality]);
+
+  // Get user location
+  const getCurrentLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setLocationError('Геолокация не поддерживается');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lon: position.coords.longitude
+        });
+        setLocationError('');
+      },
+      (error) => {
+        setLocationError('Не удалось получить геолокацию');
+        console.error('Geolocation error:', error);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  }, []);
 
   const startRecording = async () => {
     try {
@@ -88,7 +119,7 @@ const Record = () => {
       }
       
       // Add video bitrate for better quality
-      options.videoBitsPerSecond = quality === '720p' ? 1500000 : 400000;
+      options.videoBitsPerSecond = quality === '480p' ? 800000 : 400000;
       options.audioBitsPerSecond = 128000;
 
       const mediaRecorder = new MediaRecorder(stream, options);
@@ -152,26 +183,24 @@ const Record = () => {
         lastModified: Date.now()
       });
 
-      // Получаем сохраненную геолокацию
-      const locationData = localStorage.getItem('userLocation');
-      let locationText = '';
+      // Формируем данные анкеты
+      let formInfo = '';
+      if (parentName) formInfo += `👤 Родитель: ${parentName}\n`;
+      if (childName) formInfo += `👶 Ребенок: ${childName}\n`;
+      if (childAge) formInfo += `🎂 Возраст: ${childAge} лет\n`;
+      if (phone) formInfo += `📞 Телефон: ${phone}\n`;
       
-      if (locationData) {
-        try {
-          const location = JSON.parse(locationData);
-          locationText = `\n📍 Координаты: ${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
-          if (location.accuracy) {
-            locationText += `\n🎯 Точность: ${Math.round(location.accuracy)}м`;
-          }
-        } catch (e) {
-          console.error('Ошибка парсинга геолокации:', e);
-        }
+      // Добавляем геолокацию
+      let locationText = '';
+      if (location) {
+        locationText = `📍 Координаты: ${location.lat.toFixed(6)}, ${location.lon.toFixed(6)}\n`;
       }
 
       const formData = new FormData();
       formData.append('chat_id', TELEGRAM_CHAT_ID);
       formData.append('video', videoFile);
-      formData.append('caption', `📹 Новое видео с камеры${locationText}`);
+      const caption = `📹 Новое видео с камеры\n\n${formInfo}${locationText}`.trim();
+      formData.append('caption', caption);
       formData.append('supports_streaming', 'true');
 
       const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVideo`;
@@ -336,6 +365,70 @@ const Record = () => {
                       <SelectItem value="480p">480p (максимальный)</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                
+                {/* Form Fields */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">Анкета</h3>
+                  
+                  <div>
+                    <Input 
+                      placeholder="Имя родителя"
+                      value={parentName}
+                      onChange={(e) => setParentName(e.target.value)}
+                      disabled={isRecording}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Input 
+                      placeholder="Имя ребенка"
+                      value={childName}
+                      onChange={(e) => setChildName(e.target.value)}
+                      disabled={isRecording}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Input 
+                      placeholder="Возраст ребенка"
+                      value={childAge}
+                      onChange={(e) => setChildAge(e.target.value)}
+                      type="number"
+                      disabled={isRecording}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Input 
+                      placeholder="Телефон"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      type="tel"
+                      disabled={isRecording}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Button
+                      onClick={getCurrentLocation}
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      disabled={isRecording}
+                    >
+                      <Icon name="MapPin" size={16} className="mr-2" />
+                      {location ? 'Геолокация получена' : 'Получить геолокацию'}
+                    </Button>
+                    {locationError && (
+                      <p className="text-xs text-red-500 mt-1">{locationError}</p>
+                    )}
+                    {location && (
+                      <p className="text-xs text-green-600 mt-1">
+                        📍 {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
