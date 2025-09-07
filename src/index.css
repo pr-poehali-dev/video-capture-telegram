@@ -108,25 +108,3 @@
       sans-serif;
   }
 }
-
-/* Custom animations */
-@layer utilities {
-  .animate-pulse-soft {
-    animation: pulse-soft 3s ease-in-out infinite;
-  }
-
-  .animate-pulse-soft-delay {
-    animation: pulse-soft 3s ease-in-out infinite;
-    animation-delay: 0.5s;
-  }
-
-  @keyframes pulse-soft {
-    0%,
-    100% {
-      opacity: 0.8;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-}

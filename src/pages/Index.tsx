@@ -45,50 +45,21 @@ const Index = () => {
         videoRef.current.srcObject = stream;
       }
 
-      // Configure MediaRecorder with proper codecs for Telegram compatibility
-      let options: MediaRecorderOptions = {};
-      
-      // Try H.264 first for better Telegram compatibility
-      const h264Types = [
-        'video/mp4;codecs=h264,aac',
-        'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
-        'video/mp4',
-      ];
-      
-      const webmTypes = [
-        'video/webm;codecs=vp9,opus',
-        'video/webm;codecs=vp8,opus',
-        'video/webm;codecs=h264,opus',
-        'video/webm',
-      ];
+      // Configure MediaRecorder with proper codecs
+      const options = {
+        mimeType: 'video/webm;codecs=vp9,opus',
+      };
 
-      let selectedMimeType = '';
-      
-      // First try H.264 formats
-      for (const mimeType of h264Types) {
-        if (MediaRecorder.isTypeSupported(mimeType)) {
-          selectedMimeType = mimeType;
-          break;
-        }
-      }
-      
-      // If H.264 not supported, try WebM
-      if (!selectedMimeType) {
-        for (const mimeType of webmTypes) {
-          if (MediaRecorder.isTypeSupported(mimeType)) {
-            selectedMimeType = mimeType;
-            break;
+      // Fallback for different browsers/devices
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options.mimeType = 'video/webm;codecs=vp8,opus';
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          options.mimeType = 'video/webm';
+          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+            options.mimeType = 'video/mp4';
           }
         }
       }
-
-      if (selectedMimeType) {
-        options.mimeType = selectedMimeType;
-      }
-      
-      // Add video bitrate for better quality
-      options.videoBitsPerSecond = quality === '1080p' ? 2500000 : quality === '720p' ? 1500000 : 800000;
-      options.audioBitsPerSecond = 128000;
 
       const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
@@ -101,8 +72,7 @@ const Index = () => {
       };
 
       mediaRecorder.onstop = () => {
-        const mimeType = mediaRecorder.mimeType || selectedMimeType || 'video/webm';
-        const blob = new Blob(chunksRef.current, { type: mimeType });
+        const blob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType });
         setRecordedVideo(blob);
         setCurrentStep('preview');
         
@@ -112,7 +82,7 @@ const Index = () => {
         }
       };
 
-      mediaRecorder.start(100); // Record in smaller chunks for smoother video
+      mediaRecorder.start(1000); // Record in 1-second chunks
       setIsRecording(true);
       toast({ title: "Запись началась", description: "Используется тыловая камера" });
       
@@ -140,14 +110,9 @@ const Index = () => {
     setIsUploading(true);
     
     try {
-      // Определяем правильное расширение и MIME type
-      const mimeType = recordedVideo.type || 'video/webm';
-      const extension = mimeType.includes('mp4') ? '.mp4' : '.webm';
-      const fileName = `video_${Date.now()}${extension}`;
-      
-      // Создаем файл с правильным MIME type
-      const videoFile = new File([recordedVideo], fileName, { 
-        type: mimeType,
+      // Конвертируем в MP4 для лучшей совместимости
+      const videoFile = new File([recordedVideo], 'video.mp4', { 
+        type: 'video/mp4',
         lastModified: Date.now()
       });
 
